@@ -8,7 +8,6 @@ let zmq = require("zeromq");
 let responder = zmq.socket("rep");
 
 responder.on("message", function(request) {
-	console.log(JSON.parse(request.toString()));
 	console.log("Received request: [", request.toString(), "]");
 
 	// do some 'work'

@@ -22,7 +22,7 @@ requester.connect("tcp://localhost:5555");
 
 for (let i = 0; i < 10; i++) {
 	console.log("Sending request", i, "…");
-	requester.send(JSON.stringify({ x: 3, y: 4, oper: "+" }));
+	requester.send("Hello");
 }
 
 process.on("SIGINT", function() {
