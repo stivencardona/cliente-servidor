@@ -9,7 +9,7 @@ console.log("Connecting to hello world server…");
 let requester = zmq.socket("req");
 
 requester.on("message", function(reply) {
-	console.log("Received reply", x, ": [", reply.toString(), "]");
+	console.log("Received reply : [", reply.toString(), "]");
 	requester.close();
 	process.exit(0);
 });
