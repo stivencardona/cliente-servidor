@@ -7,7 +7,7 @@ mkdir storage-server
 mkdir storage-client
 cd storage-server
 head -c 1G /dev/urandom > testdata
-cd stirage-client
+cd storage-client
 head -c 1G /dev/urandom > testdata
 ```
 
@@ -20,4 +20,4 @@ python3 server.py
 python3 client.py
 ```
 
-For the client with `download` input start download testdata of the storage-server folder and `upload` input start upload of the testdata in storage-client
+For the client with `download` input start download testdata of the storage-server folder and `upload` input start upload of the testdata file in storage-client folder
