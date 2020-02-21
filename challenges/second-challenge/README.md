@@ -1,13 +1,23 @@
-# Second Challenge
+## Build commands:
 
-Build commands, run:
-
-```bash
-head -c 250M /dev/urandom > testdata
-```
-
-Helpers commands, obtain hash of files with:
+Before of execute run:
 
 ```bash
-sha512sum namefile
+mkdir storage-server
+mkdir storage-client
+cd storage-server
+head -c 1G /dev/urandom > testdata
+cd storage-client
+head -c 1G /dev/urandom > testdata
 ```
+
+## Execute
+
+In diferents consoles execute
+
+```python
+python3 server.py
+python3 client.py
+```
+
+For the client with `download` input start download testdata of the storage-server folder and `upload` input start upload of the testdata file in storage-client folder

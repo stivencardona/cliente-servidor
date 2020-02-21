@@ -1,33 +1,36 @@
 import zmq
 import hashlib
 
-CHUNK_SIZE = 35000000
+CHUNK_SIZE = 250000
 
 ctx = zmq.Context()
 
 router = ctx.socket(zmq.ROUTER)
 router.bind("tcp://*:6000")
 
+
 def download():
+    file = open("storage-server/testdata", "rb")
     h = hashlib.sha256()
-    size = 0        
+    chunks = 0
+    size = 0
     total = 0
-    segments = 0
-    for name_segment in list_segment_file:
-        file = open(name_segment, "rb")
-        data = file.read()
+    while True:
+        data = file.read(CHUNK_SIZE)
         h.update(data)
-        segments += 1
+        chunks += 1
         size = len(data)
         total += size
-        print("%i segments send, %i bytes" % (segments, total))
+        print("%i chunks send, %i bytes" % (chunks, total))
         router.send_multipart([identity, data, h.digest()])
-    router.send_multipart([identity, b"", h.digest()])
+        if not data:
+            break
     print("Complete process")
 
 def upload():
     chunks = 0
     total = 0
+    outfile = open("storage-server/testout", "wb")
     check = hashlib.sha256()
     while True:
         try:
@@ -47,15 +50,10 @@ def upload():
             check.update(chunk)
             if check.digest() != h:
                 break
-            filename =  "storage-server/" + check.hexdigest()
-            list_segment_file.append(filename)
-            outfile = open(filename, "wb")
             outfile.write(chunk)
     print("%i chunks received, %i bytes" % (chunks, total))
 
 print("Listening on port 6000")
-
-list_segment_file = []
 
 while True:
     try:
@@ -70,5 +68,4 @@ while True:
     if command == b"download":
         download()
     else:
-        list_segment_file = []
         upload()

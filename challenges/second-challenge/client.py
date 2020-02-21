@@ -1,7 +1,7 @@
 import zmq
 import hashlib
 
-CHUNK_SIZE = 35000000
+CHUNK_SIZE = 25000
 
 ctx = zmq.Context()
 
