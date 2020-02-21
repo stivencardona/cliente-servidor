@@ -1,9 +1,7 @@
 import zmq
 import hashlib
-from zhelpers import socket_set_hwm, zpipe
 
 ctx = zmq.Context()
-a, pipe = zpipe(ctx)
 
 dealer = ctx.socket(zmq.DEALER)
 dealer.connect("tcp://127.0.0.1:6000")
@@ -33,6 +31,4 @@ while True:
             break
         outfile.write(chunk)
 print("%i chunks received, %i bytes" % (chunks, total))
-pipe.send(b"OK")
-del a, pipe
 ctx.term()

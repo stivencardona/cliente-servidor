@@ -1,6 +1,5 @@
 import zmq
 import hashlib
-from zhelpers import socket_set_hwm, zpipe
 
 CHUNK_SIZE = 250000
 
@@ -10,7 +9,6 @@ file = open("testdata", "rb")
 
 router = ctx.socket(zmq.ROUTER)
 
-socket_set_hwm(router, 0)
 router.bind("tcp://*:6000")
 
 while True:
