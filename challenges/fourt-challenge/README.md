@@ -18,7 +18,7 @@ Launch your proxy with `python3 proxy.py [proxy_port]`
 
 Server up command
 
-```bash
+```shell
 bash server.sh [server_ip] [port_ip] [proxy_ip] [proxy_port]
 ```
 
@@ -26,6 +26,6 @@ bash server.sh [server_ip] [port_ip] [proxy_ip] [proxy_port]
 
 Client up command
 
-```bash
+```shell
 bash client.sh [id_client] [proxy_ip] [proxy_port]
 ```
