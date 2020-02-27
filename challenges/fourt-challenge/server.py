@@ -8,15 +8,13 @@ class Server:
 		self.socketRep = self.context.socket(zmq.REP)
 		self.socketReq = self.context.socket(zmq.REQ)
 		self.port = port
-		self.socketRep.bind("tcp://*:%i" % self.port)
+		self.socketRep.bind("tcp://*:{}".format(self.port))
 	
 	def register(self, proxy_ip = "localhost",proxy_port = 5556, sever_ip = "localhost"):
-		self.socketReq.connect("tcp://%s:%i" % (proxy_ip, proxy_port))
-		self.socketReq.send(b"register")
+		self.socketReq.connect("tcp://{}:{}".format(proxy_ip, proxy_port))
+		self.socketReq.send_multipart([b"register", sever_ip.encode('utf8'), "{}".format(self.port).encode('utf8')])
 		if self.socketReq.recv() == b"ok":
-			self.socketReq.send_multipart([ bytes(sever_ip, 'utf8'), b"%i" % self.port])
-			if self.socketReq.recv() == b"ok":
-				print("Register success")
+			print("Register success")
 		self.socketReq.close()
 	
 	def upload(self, data, h):

@@ -34,7 +34,7 @@ class Client:
 	def upload(self, filename):
 		addr = "tcp://{}:{}".format(self.proxy_ip , self.proxy_port)
 		self.socket.connect(addr)
-		self.socket.send(b"list")
+		self.socket.send_multipart([b"list"])
 		server_list = json.loads(self.socket.recv().decode('utf8'))
 		self.socket.disconnect(addr)
 		path = "storage-client/" + filename
@@ -52,43 +52,10 @@ class Client:
 				print("{} chunks send, {} bytes".format(chunk, total))
 				data = f.read(self.CHUNKSIZE)
 		self.socket.connect(addr)
-		self.socket.send(b"upload")
-		self.socket.recv()
-		self.socket.send(json.dumps([filename, self.segment_list]).encode('utf8'))
-		self.socket.recv()
+		self.socket.send_multipart([b"upload", json.dumps([filename, self.segment_list]).encode('utf8')])
 		self.socket.disconnect(addr)
 		print("Upload complete")
 
 client = Client(10485760)
 client.set_proxy()
 client.upload("testfile")
-
-# context = zmq.Context()
-
-# #  Socket to talk to server
-# print("Connecting to hello world server…")
-# socket = context.socket(zmq.REQ)
-# socket.connect("tcp://localhost:5555")
-
-# #  Do 10 requests, waiting each time for a response
-# file = open("testdata", "rb")
-# data = file.read()
-# h = hashlib.sha256()
-# h.update(data)
-
-# # socket.send_multipart([b"upload", data, h.digest()])
-
-# socket.send_multipart([b"download", b"713cfd41e074775ad4a97e5343cdee05ba9dc654a265427e0d73e44765730a7f"])
-
-# data, check = socket.recv_multipart()
-# name = hashlib.sha256()
-# name.update(data)
-# file = open("storage-client/" + name.hexdigest() , "wb")
-# file.write(data)
-# # Testing proxy list 
-
-# #  Get the reply.
-# # message = socket.recv()
-# # result = json.loads(message.decode('utf8')) 
-# # print("Received reply %s" % (message))
-
