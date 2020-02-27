@@ -1,5 +1,6 @@
 import zmq
 import json
+import sys
 
 class Proxy:
 	def __init__(self, port):
@@ -39,5 +40,6 @@ class Proxy:
 			if arg[0] == b"file":
 				self.get_file_list(arg[1].decode('utf8'))
 
-proxy = Proxy(5556)
+name, port = sys.argv
+proxy = Proxy(port)
 proxy.up()

@@ -12,7 +12,7 @@
 
 ## First step:
 
-Launch your proxy with `python3 proxy.py`
+Launch your proxy with `python3 proxy.py [proxy_port]`
 
 ## Second step:
 
