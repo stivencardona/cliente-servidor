@@ -1,14 +1,15 @@
 import zmq
 import json
 import hashlib
+import sys
 
 class Client:
-	def __init__(self, CHUNKSIZE = 2097152):
+	def __init__(self, CHUNKSIZE = 2097152, identity = 0):
 		self.context = zmq.Context()
 		self.socket = self.context.socket(zmq.REQ)
 		self.CHUNKSIZE = CHUNKSIZE
 		self.segment_list = []
-		self.dir = "storage-client/"
+		self.dir = "storage-client-{}/".format(identity)
 	
 	def get_hash(self, data):
 		return hashlib.sha256(data)
@@ -76,7 +77,15 @@ class Client:
 		self.socket.disconnect(self.addr_proxy)
 		print("Upload complete")
 
-client = Client(10485760)
-client.set_proxy()
-client.upload("testfile")
-client.download("testfile")
+name, identity, proxy_ip, proxy_port = sys.argv
+client = Client(10485760, identity)
+client.set_proxy(proxy_ip, proxy_port)
+
+while True:
+	command = input()
+	filename = input()
+	if command == "download":
+		client.download(filename)
+	if command == "upload":
+		client.upload(filename)
+
