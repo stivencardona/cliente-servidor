@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo "Please wait"
 mkdir storage-client-$1
 head -c 200M /dev/urandom > storage-client-$1/testfile
 echo "Input client format:"
