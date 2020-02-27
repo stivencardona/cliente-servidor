@@ -55,8 +55,6 @@ class Server:
 				h = arg[2]
 				self.upload(data, h) 
 
-name, ip, port = sys.argv
+name, ip, port, proxy_ip, proxy_port = sys.argv
 server = Server(ip,port)
-proxy_ip = input()
-proxy_port = input()
 server.up(proxy_ip, proxy_port)
