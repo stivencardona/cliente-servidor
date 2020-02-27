@@ -6,18 +6,17 @@ class Proxy:
 		self.context = zmq.Context()
 		self.socket = self.context.socket(zmq.REP)
 		self.port = port
-		self.socket.bind("tcp://*:%i" % self.port)
+		self.socket.bind("tcp://*:{}".format(self.port))
 		self.server_list = []
 		self.list_files = {}
 	
-	def get_file(self, filename):
-		self.socket.send(json.dumps(self.list_files[filename]))
+	def get_file_list(self, filename):
+		self.socket.send(json.dumps(self.list_files[filename]).encode('utf8'))
 
 	def store_file(self, data):
 		data = json.loads(data.decode('utf8'))
 		self.list_files[data[0]] = data[1]
 		self.socket.send(b"ok")
-		print(self.list_files)
 
 	def store_server(self, data):
 		print("Server store")
@@ -38,7 +37,7 @@ class Proxy:
 			if arg[0] == b"upload":
 				self.store_file(arg[1])
 			if arg[0] == b"file":
-				self.get_file_list(arg[1])
+				self.get_file_list(arg[1].decode('utf8'))
 
 proxy = Proxy(5556)
 proxy.up()

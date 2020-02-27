@@ -27,7 +27,7 @@ class Server:
 		outfile = open(filename, "wb")
 		outfile.write(data)
 		self.socketRep.send(b"ok")
-		print("Store file %s" % check.hexdigest())
+		print("Store file {}".format(check.hexdigest()))
 
 
 	def download(self, filename):
