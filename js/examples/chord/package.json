@@ -1,0 +1,26 @@
+{
+  "name": "chord",
+  "version": "1.0.0",
+  "description": "source code of chord architecture implement",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "chord",
+    "js",
+    "python",
+    "p2p",
+    "peer",
+    "to",
+    "peer"
+  ],
+  "author": "S7IVEN",
+  "license": "ISC",
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "network": "^0.5.0",
+    "zeromq": "^5.2.0"
+  }
+}

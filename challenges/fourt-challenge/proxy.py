@@ -14,10 +14,14 @@ class Proxy:
 	def get_file_list(self, filename):
 		self.socket.send(json.dumps(self.list_files[filename]).encode('utf8'))
 
+	def get_files(self):
+		self.socket.send(self.list_files.keys())
+
 	def store_file(self, data):
 		data = json.loads(data.decode('utf8'))
 		self.list_files[data[0]] = data[1]
 		self.socket.send(b"ok")
+		print(self.list_files.keys())
 
 	def store_server(self, data):
 		print("Server store")
@@ -39,6 +43,8 @@ class Proxy:
 				self.store_file(arg[1])
 			if arg[0] == b"file":
 				self.get_file_list(arg[1].decode('utf8'))
+			if arg[0] == b"files":
+				self.get_files()
 
 name, port = sys.argv
 proxy = Proxy(port)
