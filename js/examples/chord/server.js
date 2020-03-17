@@ -7,10 +7,9 @@ const { formatRequest, formatReply } = require("./utils");
 class File {
 	constructor(filename, path) {
 		this.path = path;
-		this.chunkReadSize = 1024;
+		this.chunkReadSize = 1024 * 1024 * 2;
 		this.filename = filename;
 		this.stats = fs.statSync(this.getPath());
-		this.buffer = Buffer.alloc(this.stats.size);
 	}
 
 	getPath() {
@@ -161,9 +160,7 @@ class Peer {
 				const content = data.params.content;
 				const hash = data.params.hash;
 				const check = this.check(hash);
-				console.log(hash);
 				if (check) {
-					console.log(hash, content);
 					this.storeFileString(hash, content);
 				} else {
 					this.request.connect(`tcp://${this.props.previous}`);
@@ -174,15 +171,56 @@ class Peer {
 			}
 
 			if (data.type == "hash") {
-				const reply = this.getHash();
-				this.reply.send(formatReply("hash", { hash: reply }));
+				const hash = this.getHash();
+				this.reply.send(formatReply("hash", { hash: hash }));
 			}
 
 			if (data.type == "download") {
 				const filename = data.params.filename;
-				this.getFile(filename);
+				const check = this.check(filename);
+				if (check) this.getFile(filename, data.params.hash);
+				else
+					this.reply.send(
+						formatReply("download", {
+							status: false,
+							content: this.getPrevious(),
+							filename: filename,
+							hash: data.params.hash
+						})
+					);
+			}
+
+			if (data.type == "downloadlist") {
+				const filename = data.params.filename;
+				const check = this.check(filename);
+				if (check) this.getFileList(filename);
+				else
+					this.reply.send(
+						formatReply("downloadlist", {
+							status: false,
+							content: this.getPrevious(),
+							filename: filename
+						})
+					);
 			}
 		});
+	}
+
+	// Agregar validacion para el nombre de archivos
+
+	getFileList(filename) {
+		const data = fs.readFileSync(`${this.props.path}/${filename}`, "utf8");
+		const hash = crypto
+			.createHash("sha1")
+			.update(data)
+			.digest("hex");
+		this.reply.send(
+			formatReply("downloadlist", {
+				status: true,
+				content: data,
+				hash: hash
+			})
+		);
 	}
 
 	setHashProps(hash) {
@@ -212,7 +250,7 @@ class Peer {
 		});
 	}
 
-	getFile(filename) {
+	getFile(filename, filehash) {
 		const file = new File(filename, this.props.path);
 
 		const readStream = fs.createReadStream(file.getPath(), {
@@ -224,11 +262,13 @@ class Peer {
 				.createHash("sha1")
 				.update(buffer)
 				.digest("hex");
-			const message = {
+			const reply = formatReply("download", {
+				status: true,
 				hash: hash,
-				buffer: buffer.toJSON()
-			};
-			this.reply.send(JSON.stringify({ status: true, message: message }));
+				filename: filehash,
+				content: buffer.toJSON()
+			});
+			this.reply.send(reply);
 		});
 
 		readStream.on("end", () => {
