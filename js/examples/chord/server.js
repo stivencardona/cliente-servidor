@@ -28,7 +28,8 @@ class Peer {
 			hash: 0,
 			path: null,
 			ip: "localhost",
-			previous: null
+			previous: null,
+			next: null
 		};
 		network.get_active_interface((err, stats) => {
 			this.props.ip = stats.ip_address;
@@ -79,17 +80,47 @@ class Peer {
 					this.request.send(request);
 				}
 			}
+
+			if (data.type == "remove") {
+				console.log(data);
+			}
+
+			if (data.type == "download") {
+				const stats = data.message;
+				const check = this.check(stats.hash);
+				if (check) {
+					this.request.send(formatRequest("remove", { filename: stats.hash }));
+					this.storeFile(stats.hash, stats.content);
+				}
+			}
+			if (data.type == "files") {
+				data.message.files.forEach(filename => {
+					console.log(this.check(filename), filename, parseInt(filename, 16));
+					if (this.check(filename)) {
+						this.request.send(
+							formatRequest("download", {
+								filename: filename,
+								hash: filename,
+								ignore: true
+							})
+						);
+					}
+				});
+			}
+
 			if (data.type == "interval") {
 				this.request.disconnect(`tcp://${this.props.previous}`);
+				this.props.next = this.props.previous;
 				this.props.previous = data.message.prev;
 				this.request.connect(`tcp://${this.props.previous}`);
 				this.request.send(formatRequest("hash"));
-				console.log(this.props);
 			}
 			if (data.type == "hash") {
 				this.props.start = parseInt(data.message.hash, 16);
-				this.request.disconnect(`tcp://${this.props.previous}`);
 				console.log(this.props);
+				this.request.disconnect(`tcp://${this.props.previous}`);
+				this.request.connect(`tcp://${this.props.next}`);
+				this.request.send(formatRequest("files"));
 			}
 			if (data.type == "prev") {
 				this.request.disconnect(`tcp://${this.props.previous}`);
@@ -113,6 +144,13 @@ class Peer {
 			if (data.type == "setprev") {
 				this.setPrevious(data.params.props);
 				this.reply.send(JSON.stringify({ status: true, message: "setprop" }));
+			}
+
+			if (data.type == "files") {
+				fs.readdir(`${this.props.path}`, (err, files) => {
+					if (err) throw err;
+					this.reply.send(formatReply("files", { files: files }));
+				});
 			}
 
 			if (data.type == "interval") {
@@ -178,7 +216,8 @@ class Peer {
 			if (data.type == "download") {
 				const filename = data.params.filename;
 				const check = this.check(filename);
-				if (check) this.getFile(filename, data.params.hash);
+				if (check || data.params.ignore == true)
+					this.getFile(filename, data.params.hash);
 				else
 					this.reply.send(
 						formatReply("download", {
@@ -188,6 +227,15 @@ class Peer {
 							hash: data.params.hash
 						})
 					);
+			}
+
+			if (data.type == "remove") {
+				console.log(data);
+				const filename = data.params.filename;
+				this.removeFile(filename);
+				this.reply.send(
+					formatRequest("remove", { status: true, message: "file deleted" })
+				);
 			}
 
 			if (data.type == "downloadlist") {
@@ -203,6 +251,12 @@ class Peer {
 						})
 					);
 			}
+		});
+	}
+
+	removeFile(filename) {
+		fs.unlink(`${this.props.path}/${filename}`, err => {
+			if (err) throw err;
 		});
 	}
 
