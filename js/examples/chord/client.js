@@ -7,7 +7,7 @@ const { exec } = require("child_process");
 class File {
 	constructor(fileName, path) {
 		this.path = path;
-		this.chunkReadSize = 1024 * 1024 * 2;
+		this.chunkReadSize = 1024 * 1024 * 20;
 		this.fileName = fileName;
 		this.stats = fs.statSync(this.getPath());
 	}
@@ -32,7 +32,6 @@ class Client {
 			const data = JSON.parse(reply);
 			if (data.type == "download") {
 				if (data.message.status) {
-					// console.log(data.message.hash, data.message.filename);
 					this.storeFile(data.message.hash, data.message.content);
 				} else {
 					this.pointConnect = data.message.content;
@@ -47,7 +46,6 @@ class Client {
 			}
 			if (data.type == "downloadlist") {
 				if (data.message.status) {
-					// console.log(JSON.parse(data.message.content), data.message.hash);
 					this.currentFile = JSON.parse(data.message.content);
 					this.currentFile["filename"] = data.message.hash;
 					this.initDownload(
@@ -94,7 +92,6 @@ class Client {
 		});
 
 		readStream.on("end", () => {
-			console.log(`${filename} send`);
 			const data = JSON.stringify(chord);
 			const hash = crypto
 				.createHash("sha1")
@@ -104,14 +101,13 @@ class Client {
 				content: data,
 				hash: hash
 			});
-			console.log(hash);
+			console.log(`Share your hash file ${hash}`);
 			this.request.send(request);
 		});
 	}
 
 	initDownload(data, hash) {
 		this.currentHash = 1;
-		console.log(this.currentFile);
 		data.hashs.forEach(filename => {
 			this.request.send(
 				formatRequest("download", { filename: filename, hash: hash })
@@ -132,9 +128,7 @@ class Client {
 		});
 		writeStream.end();
 		writeStream.on("ready", () => {
-			console.log(this.currentFile.filename);
 			if (this.currentHash == this.currentFile.hashs.length) {
-				console.log(this.currentFile.filename);
 				const directories = this.currentFile.hashs.map(
 					filename => `${this.path}/${filename}`
 				);
@@ -159,6 +153,7 @@ class Client {
 								console.log(`stderr: ${stderr}`);
 								return;
 							}
+							console.log("Download complete");
 						});
 					}
 				);

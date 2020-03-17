@@ -7,7 +7,7 @@ const { formatRequest, formatReply } = require("./utils");
 class File {
 	constructor(filename, path) {
 		this.path = path;
-		this.chunkReadSize = 1024 * 1024 * 2;
+		this.chunkReadSize = 1024 * 1024 * 20;
 		this.filename = filename;
 		this.stats = fs.statSync(this.getPath());
 	}
