@@ -7,7 +7,7 @@ const { exec } = require("child_process");
 class File {
 	constructor(fileName, path) {
 		this.path = path;
-		this.chunkReadSize = 1024 * 1024 * 20;
+		this.chunkReadSize = 1024 * 1024 * 2;
 		this.fileName = fileName;
 		this.stats = fs.statSync(this.getPath());
 	}
@@ -77,6 +77,11 @@ class Client {
 			highWaterMark: file.chunkReadSize
 		});
 		let cnt = 1;
+		const sz = (file.chunkReadSize * 100) / file.stats.size;
+		const loadBar =
+			"                                                                                                    ";
+		let sizePart = "";
+		for (let i = 0; i < sz; i++) sizePart += "=";
 		readStream.on("data", buffer => {
 			const hash = crypto
 				.createHash("sha1")
@@ -88,7 +93,17 @@ class Client {
 			});
 			chord.hashs.push(hash);
 			this.request.send(request);
-			console.log(`${cnt++} part sends of file`);
+			console.clear();
+			let segmentBar = "";
+			for (let i = 1; i <= cnt; i++) segmentBar += sizePart;
+			console.log(
+				`[${segmentBar}${
+					file.chunkReadSize * cnt < file.stats.size ? ">" : ""
+				}${loadBar.substring(
+					cnt * sz + (1 * file.chunkReadSize * cnt < file.stats.size)
+				)}](${2 * cnt}MB/${file.stats.size / (1024 * 1024)}MB)`
+			);
+			cnt++;
 		});
 
 		readStream.on("end", () => {
@@ -101,8 +116,9 @@ class Client {
 				content: data,
 				hash: hash
 			});
-			console.log(`Share your hash file ${hash}`);
 			this.request.send(request);
+			console.log(`Share your hash file ${hash}`);
+			console.log("Type command");
 		});
 	}
 
@@ -120,7 +136,11 @@ class Client {
 	}
 
 	storeFile(filename, data) {
-		console.log(`${this.currentHash} segment download`);
+		console.clear();
+		console.log(
+			`Download progress ${filename} (${2 * this.currentHash}MB/${this
+				.currentFile.hashs.length * 2}MB)`
+		);
 		const buffer = Buffer.from(data);
 		const writeStream = fs.createWriteStream(`${this.path}/${filename}`);
 		writeStream.write(buffer, err => {
@@ -154,6 +174,7 @@ class Client {
 								return;
 							}
 							console.log("Download complete");
+							console.log("Type command");
 						});
 					}
 				);
@@ -193,6 +214,7 @@ stdin.addListener("data", data => {
 	} else if (command == "exit") {
 		process.exit(1);
 	} else {
+		console.clear();
 		console.log("Command not found, type again");
 	}
 });
