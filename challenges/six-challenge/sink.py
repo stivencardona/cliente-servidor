@@ -23,7 +23,6 @@ request.connect("tcp://localhost:5559")
 response = json.loads(receiver.recv())
 numberCentroids, dimensions, numberPoints = [int(x) for x in response]
 groupsSizes = [ 0 for i in range(numberCentroids)]
-numberPoint = 0
 
 def generatePoint(size):
 	return [0 for i in range(size)]
@@ -31,15 +30,17 @@ def generatePoint(size):
 numberIterations = 0
 
 # Process 10 confirmations
-while numberIterations < 5:
+while numberIterations < 50:
+	newCentroids = []
 	with open("prediction.csv", "r") as file:
 		data = file.readlines()
 		newCentroids = [generatePoint(dimensions) for i in range(numberCentroids)]
+		numberPoint = 0
 		while numberPoint < numberPoints:
 			response = json.loads(receiver.recv())
 			numberPoint += len(response["tags"])
 			for tag in response["tags"]:
-				data[tag[0]] = data[tag[0]].split("\n")[0] + str(tag[2]) + "\n"
+				data[tag[0]] = data[tag[0]].split("\n")[0] + ' | ' + str(tag[2]) + "\n"
 				groupsSizes[tag[2]] += 1
 			for i,value in enumerate(response["sums"]):
 				for j,comp in enumerate(value):
@@ -49,9 +50,9 @@ while numberIterations < 5:
 		for i, centroid in enumerate(newCentroids):
 			for j, comp in enumerate(centroid):
 				newCentroids[i][j] = comp / groupsSizes[i] if groupsSizes[i] else 0
-		request.send_string(json.dumps(newCentroids))
-		request.recv()
-		print("hi")
+	request.send_string(json.dumps(newCentroids))
+	request.recv()
+	print("hi")
 	numberIterations += 1
 
 

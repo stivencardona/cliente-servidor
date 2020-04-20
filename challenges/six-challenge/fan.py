@@ -54,14 +54,17 @@ def work(sizeData, numberIntervals, centroids):
 		task = { "centroids": centroids, "range": work}
 		sender.send_string(json.dumps(task))
 
-work(numberPoints,12, [ generateCentroid(-3 , 3, dimensions) for i in range(int(k))])
-
-
 numberIterations = 0
+work(numberPoints,12, [ generateCentroid(-3 , 3, dimensions) for i in range(int(k))])
+numberIterations += 1
 
-while numberIterations < 5:
+
+while numberIterations < 50:
+	print(numberIterations)
 	request = sinkRep.recv()
 	centroids = json.loads(request)
-	numberIterations += 1
 	sinkRep.send_string('ok')
 	work(numberPoints,12,centroids)
+	numberIterations += 1
+sinkRep.recv()
+sinkRep.send_string('ok')
