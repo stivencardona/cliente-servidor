@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "zeromq": "^5.2.0"
+    "zeromq": "^5.3.1"
   }
 }
